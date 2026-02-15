@@ -33,27 +33,47 @@ cd realtime-bpm
 python3 -m venv .venv
 source .venv/bin/activate
 pip install numpy sounddevice aubio
-▶ Run
+```
+
+---
+
+## ▶ Run
+
+```bash
 python3 bpm.py
-🔁 After Reboot / New SSH Session
+```
+
+---
+
+## 🔁 After Reboot / New SSH Session
+
+```bash
 cd ~/realtime-bpm
 source .venv/bin/activate
 python3 bpm.py
-🧠 Architecture
-Capture stereo input via sounddevice
+```
 
-Convert to mono
+---
 
-Detect beats using aubio.tempo()
+## 🧠 Architecture
 
-Store IOIs (Inter-Onset Intervals)
+1. Capture stereo input via `sounddevice`
+2. Convert to mono
+3. Detect beats using `aubio.tempo()`
+4. Store IOIs (Inter-Onset Intervals)
+5. Compute:
 
-Compute:
-
+```
 BPM = 60 / mean(IOI)
-Print BPM every 2 seconds
+```
 
-📊 Processing Flow
+6. Print BPM every 2 seconds
+
+---
+
+## 📊 Processing Flow
+
+```json
 {
   "audio_input": "Steinberg UR22",
   "capture": "ALSA 44.1kHz",
@@ -63,16 +83,16 @@ Print BPM every 2 seconds
   "bpm_calc": "60 / mean(IOI)",
   "output": "CLI (2s interval)"
 }
-✅ Status
-✔ Stable
-✔ Low CPU
-✔ Production-ready baseline
-
-Version: 1.0
-
+```
 
 ---
 
-That will render cleanly with sections, spacing, and code blocks.
+## ✅ Status
 
-If it still looks bad, it means you accidentally removed a backtick or blank line.
+✔ Stable  
+✔ Low CPU  
+✔ Production-ready baseline  
+
+---
+
+**Version:** 1.0
