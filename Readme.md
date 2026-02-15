@@ -1,103 +1,57 @@
-🎵 Raspberry Pi 5 – Real-Time BPM Estimator
+# 🎵 Raspberry Pi 5 – Real-Time BPM Estimator
 
 Stable real-time BPM detection using a Raspberry Pi 5 and Steinberg UR22.
 
-Designed for:
+---
 
-Live mix input
+## ⚙️ System
 
-Headless operation (SSH)
+**Hardware**
+- Raspberry Pi 5  
+- Steinberg UR22 USB Audio Interface  
 
-Low CPU footprint
+**OS**
+- Raspberry Pi OS Bookworm 64-bit Lite  
 
-Simple CLI execution
+**Audio**
+- ALSA capture  
+- 44.1 kHz  
+- Stereo → mono mix  
 
-⚙️ System
+**Python**
+- aubio 0.4.9  
+- numpy  
+- sounddevice  
 
-Hardware
+---
 
-Raspberry Pi 5
+## 🐍 Setup (Recommended: Virtual Environment)
 
-Steinberg UR22 USB Audio Interface
-
-OS
-
-Raspberry Pi OS Bookworm 64-bit Lite
-
-Audio
-
-ALSA capture
-
-44.1 kHz
-
-Stereo → mono mix
-
-Python
-
-aubio 0.4.9
-
-numpy
-
-sounddevice
-
+```bash
+mkdir realtime-bpm
+cd realtime-bpm
+python3 -m venv .venv
+source .venv/bin/activate
+pip install numpy sounddevice aubio
+▶ Run
+python3 bpm.py
+🔁 After Reboot / New SSH Session
+cd ~/realtime-bpm
+source .venv/bin/activate
+python3 bpm.py
 🧠 Architecture
-
-The estimator works as follows:
-
 Capture stereo input via sounddevice
 
 Convert to mono
 
 Detect beats using aubio.tempo()
 
-Store IOIs (Inter-Onset Intervals) in a sliding window
+Store IOIs (Inter-Onset Intervals)
 
 Compute:
 
 BPM = 60 / mean(IOI)
-
-
-Output BPM every 2 seconds
-
-No reset calls.
-No unnecessary DSP layers.
-No over-engineering.
-
-Stable > clever.
-
-🚀 Install
-sudo apt install python3-pip
-pip3 install numpy sounddevice aubio
-
-
-Or if using requirements:
-
-pip3 install -r requirements.txt
-
-▶ Run
-python3 bpm.py
-
-
-Output example:
-
-BPM: 125.4
-BPM: 125.5
-
-
-Updates every 2 seconds.
-
-🔌 Shutdown & Resume
-
-Shutdown safely:
-
-sudo shutdown now
-
-
-Resume:
-
-ssh pi@<your_pi_ip>
-cd ~
-python3 bpm.py
+Print BPM every 2 seconds
 
 📊 Processing Flow
 {
@@ -109,26 +63,16 @@ python3 bpm.py
   "bpm_calc": "60 / mean(IOI)",
   "output": "CLI (2s interval)"
 }
-
-✅ Current Status
-
-✔ Stable beat detection
-✔ Reliable BPM lock
-✔ Low CPU usage
-✔ Clean restart behavior
+✅ Status
+✔ Stable
+✔ Low CPU
 ✔ Production-ready baseline
 
-🔮 Future Directions
-
-OLED / HDMI display output
-
-OSC / MQTT network broadcast
-
-ML pitch tracking process
-
-systemd auto-start
-
-Web dashboard
-
 Version: 1.0
-Status: Stable baseline
+
+
+---
+
+That will render cleanly with sections, spacing, and code blocks.
+
+If it still looks bad, it means you accidentally removed a backtick or blank line.
