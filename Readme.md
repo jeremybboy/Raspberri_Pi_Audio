@@ -1,6 +1,7 @@
 # 🎵 Raspberry Pi 5 – Real-Time BPM Estimator
 
-Stable real-time BPM detection using a Raspberry Pi 5 and Steinberg UR22.
+Stable real-time BPM detection using a Raspberry Pi 5 and Audio Interface.
+[![Scheme ](BPM_Detector_pedal.svg)]
 
 ---
 
@@ -8,7 +9,7 @@ Stable real-time BPM detection using a Raspberry Pi 5 and Steinberg UR22.
 
 **Hardware**
 - Raspberry Pi 5  
-- Steinberg UR22 USB Audio Interface  
+- USB Audio Interface  
 
 **OS**
 - Raspberry Pi OS Bookworm 64-bit Lite  
@@ -75,7 +76,7 @@ BPM = 60 / mean(IOI)
 
 ```json
 {
-  "audio_input": "Steinberg UR22",
+  "audio_input": "Audio Interface",
   "capture": "ALSA 44.1kHz",
   "stream": "sounddevice InputStream",
   "beat_detection": "aubio.tempo()",
