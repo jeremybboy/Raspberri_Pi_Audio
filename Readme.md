@@ -1,7 +1,7 @@
 # 🎵 Raspberry Pi 5 – Real-Time BPM Estimator
 
 Stable real-time BPM detection using a Raspberry Pi 5 and Audio Interface.
-[![Scheme ](BPM_Detector_pedal.svg)]
+[![Scheme ](BPM_Detector_pedal.svg)
 
 ---
 
