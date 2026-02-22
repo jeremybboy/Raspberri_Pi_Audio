@@ -26,6 +26,9 @@ i2cdetect -y 1
 You should see 3c
 
 ## Run the program
+
+chmod +x ~/bpm_oled_autocorr_fast.py 
+
 python3 bpm_oled_autocorr_fast.py
 
 
@@ -148,3 +151,22 @@ BPM = 60 / mean(IOI)
 ---
 
 **Version:** 1.0
+
+
+
+# TODO – Next Iteration (v2.1)
+
+## 1. Faster Initial Lock
+- Implement dual-window system (2s fast estimator + 8s stable estimator)
+- Add confidence metric (peak strength + short-term stability)
+- Display provisional BPM (~) until confirmed
+
+## 2. Silence Hold Logic
+- Add RMS gate threshold
+- Freeze last BPM when below threshold
+- Add small “HOLD” indicator on OLED
+
+## 3. Beat Phase Indicator
+- Implement simple phase accumulator (0–1 per beat)
+- Sync phase using envelope peaks
+- Render minimal visual progress indicator on OLED
