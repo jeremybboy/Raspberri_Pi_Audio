@@ -7,6 +7,18 @@ The engine prioritizes stability over instant lock, achieves accurate tempo trac
 Planned improvements include faster initial lock via dual-window estimation, silence hold behavior, beat phase indication, and systemd appliance-mode autostart.
 
 
+## Libraries Requirements
+pip install numpy sounddevice luma.oled pillow
 
 
+# enable I2C
+sudo raspi-config
+# Interface Options → I2C → Enable
+sudo reboot
 
+i2cdetect -y 1
+
+You should see 3c
+
+## Run the program
+python3 bpm_oled_autocorr_fast.py
