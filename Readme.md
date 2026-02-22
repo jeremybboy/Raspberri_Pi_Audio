@@ -1,4 +1,9 @@
-### Raspberry Pi 5 Real-Time BPM Pedal
+# 🎵 Raspberry Pi 5 – Real-Time BPM Estimator
+
+Stable real-time BPM detection using a Raspberry Pi 5 and Audio Interface.
+[![Scheme ](BPM_Detector_pedal.svg)]
+
+---
 
 This project is a standalone Raspberry Pi 5 device that captures live audio from a USB interface and displays a stable real-time BPM on an SH1106 OLED using an autocorrelation-based estimator.
 Audio is captured at 44.1 kHz via ALSA, mixed to mono, converted to an energy envelope, buffered (~8s), processed with FFT autocorrelation, peak-detected, folded into 90–180 BPM, smoothed with hysteresis, and rendered to the OLED.
@@ -22,3 +27,124 @@ You should see 3c
 
 ## Run the program
 python3 bpm_oled_autocorr_fast.py
+
+
+
+
+## ⚙️ System
+
+**Hardware**
+- Raspberry Pi 5  
+- USB Audio Interface
+- I2C Oled display
+
+**OS**
+- Raspberry Pi OS Bookworm 64-bit Lite  
+
+**Audio**
+- ALSA capture  
+- 44.1 kHz  
+- Stereo → mono mix  
+
+
+
+## 🐍 Setup (Recommended: Virtual Environment)
+
+```bash
+mkdir oled-env
+cd oled-env
+python3 -m venv .venv
+source .venv/bin/activate
+pip install numpy sounddevice aubio
+```
+
+---
+
+## ▶ Run
+
+```bash
+python3 bpm_oled_autocorr_fast.py
+```
+
+---
+
+## 🔁 After Reboot / New SSH Session
+
+```bash
+cd ~/oled-env
+source .venv/bin/activate
+python3 bpm_oled_autocorr_fast.py
+```
+
+---
+
+## 🧠 Architecture (current – v2.0 Autocorrelation Engine)
+
+Capture stereo input via sounddevice (ALSA 44.1kHz)
+Convert to mono
+Rectify + low-pass filter → energy envelope
+Maintain rolling buffer (~8s)
+Compute FFT-based autocorrelation on envelope
+Detect dominant lag peak
+Convert lag → BPM
+Fold half/double-time into 90–180 BPM range
+Apply hysteresis smoothing
+Render stable BPM to SH1106 OLED
+
+## 📊 Processing Flow
+```json
+{
+  "audio_input": "Audio Interface (USB Audio CODEC)",
+  "capture": "ALSA 44.1kHz stereo",
+  "mono_mix": "L+R / 2",
+  "envelope": "Rectify + Low-pass",
+  "buffer": "~8s rolling window",
+  "tempo_estimation": "FFT Autocorrelation",
+  "peak_detection": "Dominant lag",
+  "bpm_calc": "60 / period",
+  "post_processing": "Half/Double-time fold + Hysteresis",
+  "output": "SH1106 OLED (real-time BPM)"
+}
+```
+
+## 🧠 Architecture (old)
+
+1. Capture stereo input via `sounddevice`
+2. Convert to mono
+3. Detect beats using `aubio.tempo()`
+4. Store IOIs (Inter-Onset Intervals)
+5. Compute:
+
+```
+BPM = 60 / mean(IOI)
+```
+
+6. Print BPM every 2 seconds
+
+---
+
+## 📊 Processing Flow
+
+```json
+{
+  "audio_input": "Audio Interface",
+  "capture": "ALSA 44.1kHz",
+  "stream": "sounddevice InputStream",
+  "beat_detection": "aubio.tempo()",
+  "buffer": "IOI sliding window",
+  "bpm_calc": "60 / mean(IOI)",
+  "output": "CLI (2s interval)"
+}
+```
+
+---
+
+## ✅ Status
+
+✔ Stable  
+✔ Low CPU  
+✔ Production-ready baseline  
+
+---
+
+**Version:** 1.0
