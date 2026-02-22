@@ -11,6 +11,15 @@ Hardware: Raspberry Pi 5, Behringer UCA202 (USB Audio CODEC), SH1106 I2C OLED (0
 The engine prioritizes stability over instant lock, achieves accurate tempo tracking with low CPU usage on Pi 5, and is designed for live pedal-style operation.
 Planned improvements include faster initial lock via dual-window estimation, silence hold behavior, beat phase indication, and systemd appliance-mode autostart.
 
+quick start 
+ssh uzan@jeremybboy.local
+
+source oled-env/bin/activate
+
+
+python3 bpm_oled_autocorr_fast.py 
+
+
 
 ## Libraries Requirements
 pip install numpy sounddevice luma.oled pillow
