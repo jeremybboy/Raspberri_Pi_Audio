@@ -152,7 +152,7 @@ BPM = 60 / mean(IOI)
 
 **Version:** 1.0
 
-
+source oled-env/bin/activate
 
 # TODO – Next Iteration (v2.1)
 
