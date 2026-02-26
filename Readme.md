@@ -20,6 +20,17 @@ source oled-env/bin/activate
 python3 bpm_oled_autocorr_fast.py 
 
 
+The script captures stereo audio from the USB Audio CODEC at 44.1 kHz, mixes it to mono in a callback, and continuously stores samples in an 8-second rolling buffer.
+
+Every 0.5 seconds, if the signal RMS is above a noise threshold, it computes a smoothed energy envelope (rectify + 25 ms low-pass) and runs an FFT-based autocorrelation to estimate the dominant tempo lag.
+
+It converts the detected lag to BPM, folds half/double-time into the 90–180 BPM range, and applies hysteresis smoothing so the displayed BPM is stable but still responsive.
+
+During the first few seconds after startup, it uses a shorter analysis window for faster initial lock, then switches to a longer window for improved stability.
+
+The locked BPM, RMS level, and device info are rendered to the SH1106 OLED in real time, while debug information is printed to the terminal.
+
+
 
 ## Libraries Requirements
 pip install numpy sounddevice luma.oled pillow
