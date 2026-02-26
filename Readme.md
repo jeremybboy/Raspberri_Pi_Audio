@@ -31,6 +31,18 @@ During the first few seconds after startup, it uses a shorter analysis window fo
 The locked BPM, RMS level, and device info are rendered to the SH1106 OLED in real time, while debug information is printed to the terminal.
 
 
+BPM Algorithm 
+The algorithm first converts the audio to mono, computes an RMS check for signal presence, and generates an energy envelope by rectifying the signal and applying a short low-pass filter (~25 ms).
+
+It applies a Hann window and computes an FFT-based autocorrelation of the envelope to efficiently measure periodicity over a multi-second buffer.
+
+It searches for the strongest autocorrelation peak within a lag range corresponding to 90–180 BPM, then refines the peak position using parabolic interpolation for sub-sample accuracy.
+
+The detected period is converted to BPM and folded into the target range by doubling or halving to correct half-time or double-time errors.
+
+Finally, it applies hysteresis smoothing so small changes follow quickly while larger jumps are damped, producing a stable displayed tempo.
+
+
 
 ## Libraries Requirements
 pip install numpy sounddevice luma.oled pillow
