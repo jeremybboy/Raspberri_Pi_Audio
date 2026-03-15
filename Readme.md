@@ -46,6 +46,8 @@ source .venv/bin/activate
 python bpm_oled_autocorr_fast.py
 
 
+systemctl status bpm
+
 ## Auto-start BPM engine at boot
 
 Create service file:
