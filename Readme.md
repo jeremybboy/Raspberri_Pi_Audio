@@ -1,23 +1,98 @@
-# 🎵 Raspberry Pi 5 – Real-Time BPM Estimator
+# Raspberry Pi Audio – Real-Time BPM Estimator
+
+Standalone real-time BPM detection system using a Raspberry Pi and USB audio interface.
+The system captures live audio, estimates tempo using autocorrelation, and displays BPM on an OLED display.
+
+Designed to operate as a **bootable hardware appliance** controllable remotely via SSH.
+
 
 Stable real-time BPM detection using a Raspberry Pi 5 and Audio Interface.
 [![Scheme ](BPM_Detector_pedal.svg)]
 
 ---
+## Hardware
 
+- Raspberry Pi 5
+- USB Audio Interface (e.g. Steinberg UR22 / Behringer)
+- SH1106 OLED display (I2C)
+- USB power supply
+- 
 This project is a standalone Raspberry Pi 5 device that captures live audio from a USB interface and displays a stable real-time BPM on an SH1106 OLED using an autocorrelation-based estimator.
 Audio is captured at 44.1 kHz via ALSA, mixed to mono, converted to an energy envelope, buffered (~8s), processed with FFT autocorrelation, peak-detected, folded into 90–180 BPM, smoothed with hysteresis, and rendered to the OLED.
 Hardware: Raspberry Pi 5, Behringer UCA202 (USB Audio CODEC), SH1106 I2C OLED (0x3C); Software: Raspberry Pi OS Bookworm Lite 64-bit, Python venv, numpy, sounddevice, luma.oled, pillow.
 The engine prioritizes stability over instant lock, achieves accurate tempo tracking with low CPU usage on Pi 5, and is designed for live pedal-style operation.
 Planned improvements include faster initial lock via dual-window estimation, silence hold behavior, beat phase indication, and systemd appliance-mode autostart.
 
+
+## Software
+
+OS: Raspberry Pi OS Bookworm (64-bit Lite)
+
+Python libraries:
+- numpy
+- sounddevice
+- luma.oled
+- pillow
+
+
+python3 -m venv .venv
+source .venv/bin/activate
+pip install numpy sounddevice luma.oled pillow
+
+## Run manually
+
+cd ~/realtime-bpm
+source .venv/bin/activate
+python bpm_oled_autocorr_fast.py
+
+
+## Auto-start BPM engine at boot
+
+Create service file:
+
+sudo nano /etc/systemd/system/bpm.service
+
+[Unit]
+Description=BPM Estimator
+After=network.target
+
+[Service]
+User=uzan
+WorkingDirectory=/home/uzan
+ExecStart=/home/uzan/.venv/bin/python /home/uzan/bpm_oled_autocorr_fast.py
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+
+sudo systemctl daemon-reload
+sudo systemctl enable bpm
+sudo systemctl start bpm
+
+
+## Remote control via SSH (iPhone / Termius)
+
+Connect:
+
+
 quick start on the laptop remote connection 
 ssh uzan@jeremybboy.local
+
+
+
+sudo systemctl start bpm
+sudo systemctl stop bpm
+sudo systemctl restart bpm
+systemctl status bpm
 
 source oled-env/bin/activate
 
 
 python3 bpm_oled_autocorr_fast.py 
+
+
+Network setup 
+nmcli device wifi connect "SSID" password "password"
 
 
 The script captures stereo audio from the USB Audio CODEC at 44.1 kHz, mixes it to mono in a callback, and continuously stores samples in an 8-second rolling buffer.
