@@ -1,0 +1,84 @@
+---
+description: Raspberry Pi USB audio + SH1106 OLED — paths, run commands, Agent OK workflow
+globs: "**/*"
+alwaysApply: true
+---
+
+# Raspberri_Pi_Audio (Pi + Behringer UCA202 + OLED)
+
+Local clone: `/home/uzan/Raspberri_Pi_Audio`. Python venv: `.venv/` (numpy, sounddevice, luma.oled, pillow). System: `libportaudio2` for PortAudio.
+
+GitHub: `https://github.com/jeremybboy/Raspberri_Pi_Audio`
+
+## User workflow (Cursor / Agent)
+
+- Prefer **not** asking the user to copy-paste shell commands into an external terminal.
+- When testing or running demos, the **coding agent should propose the exact terminal command** so the user can approve with **Run** / **OK** on the prompt.
+
+## Commands to run (propose these for OK)
+
+**Line-in level meter (terminal VU — stays on; Ctrl+C to stop)** — use this to confirm audio is reaching Python/PortAudio before trusting the OLED:
+
+```bash
+/home/uzan/Raspberri_Pi_Audio/.venv/bin/python /home/uzan/Raspberri_Pi_Audio/linein_level_monitor.py
+```
+
+Optional short sanity (~3 s) if you only want to see it start and print levels:
+
+```bash
+timeout 3s /home/uzan/Raspberri_Pi_Audio/.venv/bin/python /home/uzan/Raspberri_Pi_Audio/linein_level_monitor.py
+```
+
+**One-minute terminal calibration** (then exits — enough time to start playback on the source):
+
+```bash
+timeout 60s /home/uzan/Raspberri_Pi_Audio/.venv/bin/python /home/uzan/Raspberri_Pi_Audio/linein_level_monitor.py
+```
+
+**OLED line-in level meter** (big VU bar + L/R mini meters + RMS/peak on SH1106 — best for “how loud is it on the display?”):
+
+```bash
+/home/uzan/Raspberri_Pi_Audio/.venv/bin/python /home/uzan/Raspberri_Pi_Audio/oled_linein_level_meter.py
+```
+
+One-minute OLED calibration run (then exits):
+
+```bash
+timeout 60s /home/uzan/Raspberri_Pi_Audio/.venv/bin/python /home/uzan/Raspberri_Pi_Audio/oled_linein_level_meter.py
+```
+
+**OLED line-in spectrum visualizer** (RCA → UCA202 → USB; 16-band bars on SH1106):
+
+```bash
+/home/uzan/Raspberri_Pi_Audio/.venv/bin/python /home/uzan/Raspberri_Pi_Audio/oled_linein_visualizer.py
+```
+
+One-minute bounded run (then exits):
+
+```bash
+timeout 60s /home/uzan/Raspberri_Pi_Audio/.venv/bin/python /home/uzan/Raspberri_Pi_Audio/oled_linein_visualizer.py
+```
+
+Same with explicit `cd` (equivalent):
+
+```bash
+cd /home/uzan/Raspberri_Pi_Audio && .venv/bin/python oled_linein_visualizer.py
+```
+
+**BPM estimator (autocorrelation + OLED):**
+
+```bash
+/home/uzan/Raspberri_Pi_Audio/.venv/bin/python /home/uzan/Raspberri_Pi_Audio/bpm_oled_autocorrel_fast.py
+```
+
+Bounded smoke (~1 min):
+
+```bash
+timeout 60s /home/uzan/Raspberri_Pi_Audio/.venv/bin/python /home/uzan/Raspberri_Pi_Audio/bpm_oled_autocorrel_fast.py
+```
+
+## Hardware notes
+
+- Input device name match in code: `USB Audio CODEC` (Behringer UCA202 class).
+- OLED: I2C bus `1`, address `0x3C`, driver `sh1106` via `luma.oled`.
+- If the visualizer shows **NO SIGNAL**, raise the **analog** source level into the RCA line-in (software RMS gate is similar to the BPM script).
