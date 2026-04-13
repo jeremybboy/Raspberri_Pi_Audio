@@ -5,6 +5,7 @@ The system captures live audio, estimates tempo using autocorrelation, and displ
 
 Designed to operate as a **bootable hardware appliance** controllable remotely via SSH.
 
+This is a test, Jeremy.
 
 Stable real-time BPM detection using a Raspberry Pi 5 and Audio Interface.
 [![Scheme ](BPM_Detector_pedal.svg)]
