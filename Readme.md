@@ -279,3 +279,7 @@ source oled-env/bin/activate
 - Implement simple phase accumulator (0–1 per beat)
 - Sync phase using envelope peaks
 - Render minimal visual progress indicator on OLED
+
+---
+
+_Tiny README edit (2026-04-13) to test whether direct pushes to `main` are blocked by GitHub branch rules._
