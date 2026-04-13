@@ -14,6 +14,37 @@ GitHub: `https://github.com/jeremybboy/Raspberri_Pi_Audio`
 
 - Prefer **not** asking the user to copy-paste shell commands into an external terminal.
 - When testing or running demos, the **coding agent should propose the exact terminal command** so the user can approve with **Run** / **OK** on the prompt.
+- **Git / GitHub:** the agent carries work **up to a Pull Request that is ready to merge** (branch on `origin` + PR link). The user opens the **PR**, reviews **Files changed** / **Commits**, and clicks **Merge pull request** when satisfied. The agent does **not** click **Merge** on GitHub.
+
+## Git: agent prepares the PR; you merge on GitHub (required)
+
+**End state:** a **Pull request** page like `https://github.com/jeremybboy/Raspberri_Pi_Audio/pull/<N>` where the user can review everything and use **Merge pull request** when ready (example: [PR #1](https://github.com/jeremybboy/Raspberri_Pi_Audio/pull/1)). When branch rules protect `main`, new work reaches `main` only through that merge.
+
+### Agent responsibilities (in order)
+
+1. **Branch:** put new work on **`wip/<topic>`** or **`feature/<topic>`** when using the PR workflow (not new commits only on `main` if `main` is protected).
+2. **Commit** with a clear message; post **`git log -1 --oneline`**, **`git show --stat`**, and **`git rev-parse HEAD`**.
+3. **Push the head branch to `origin`** (feature branch only — **do not** push new work straight to **`origin/main`** when the workflow is PR-only):
+   - e.g. `git push -u origin HEAD` on `wip/...`, or `git push -u origin HEAD:wip/<topic>` when using a one-off remote branch name.
+4. **Ensure a PR exists** and send the **`/pull/N`** link:
+   - **Preferred:** `gh pr create --base main --head wip/<topic> --title "..." --body "..."` when `gh` is installed and authenticated.
+   - **Fallback:** compare (opens **Create pull request** with the right range):  
+     `https://github.com/jeremybboy/Raspberri_Pi_Audio/compare/main...wip/<topic>?expand=1`
+   - **Fallback 2:** new PR form:  
+     `https://github.com/jeremybboy/Raspberri_Pi_Audio/pull/new/wip/<topic>`
+
+### User responsibilities
+
+1. Open the **PR** link from the agent.
+2. Review **Commits** and **Files changed**.
+3. Click **Merge pull request** (and confirm) when satisfied.
+4. On the Pi: **`git checkout main && git pull origin main`** after merge so local `main` matches GitHub.
+
+### Rules
+
+- **Do not** merge on GitHub as the agent; that stays with the user.
+- **Do not** land changes on **`origin/main`** by direct push when the agreed workflow is PR-only; use **`wip/...`** + PR.
+- After commits, always post stats and the **handoff** link (PR URL preferred; otherwise compare / `pull/new`).
 
 ## Commands to run (propose these for OK)
 
@@ -76,6 +107,41 @@ Bounded smoke (~1 min):
 ```bash
 timeout 60s /home/uzan/Raspberri_Pi_Audio/.venv/bin/python /home/uzan/Raspberri_Pi_Audio/bpm_oled_autocorrel_fast.py
 ```
+
+## Branch protection: require PR for `main` (GitHub)
+
+Goal: **no direct pushes of new commits to `main`** — changes land via a **pull request** (still mergeable by you as repo owner unless you add stricter review rules).
+
+### Option A — GitHub website (no API)
+
+1. Open: `https://github.com/jeremybboy/Raspberri_Pi_Audio/settings/rules`
+2. **New ruleset** (or **New branch ruleset** depending on UI).
+3. **Name:** e.g. `protect-main-pr-only`.
+4. **Enforcement status:** Active.
+5. **Target branches:** restrict to `main` (or “Default branch” if that is `main`).
+6. Enable **Require a pull request before merging**.
+7. **Required approvals:** set to **0** if you work solo and only want the PR gate (no second human). Use **1+** if you want mandatory reviews.
+8. Save. Confirm `main` no longer accepts fast-forward-only pushes of new work without a PR.
+
+GitHub docs: [About rulesets](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/about-rules-for-repositories).
+
+### Option B — API script (Pi or PC; needs PAT once)
+
+Repo script: [`scripts/enable-main-ruleset.sh`](/home/uzan/Raspberri_Pi_Audio/scripts/enable-main-ruleset.sh)
+
+```bash
+export GH_TOKEN=ghp_xxxx   # classic PAT with `repo`, or fine-grained with Administration: write
+bash /home/uzan/Raspberri_Pi_Audio/scripts/enable-main-ruleset.sh
+```
+
+Optional: `APPROVALS=1` for one required approving review. If creation fails with **422**, a ruleset with the same name may already exist — remove or rename it in **Settings → Rules**.
+
+REST reference: [Create a repository ruleset](https://docs.github.com/en/rest/repos/rules?apiVersion=2022-11-28#create-a-repository-ruleset).
+
+### Notes
+
+- **Agents cannot click GitHub Settings for you**; they can propose the script or paste the links above. Turning the rule on is **always** on GitHub (UI or API with your token).
+- After protection is on, day-to-day flow: work on `feature/...` or `wip/...` → open **PR into `main`** → merge when ready.
 
 ## Hardware notes
 
