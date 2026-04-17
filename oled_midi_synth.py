@@ -8,10 +8,15 @@ Run (from project venv):
   /home/uzan/Raspberri_Pi_Audio/.venv/bin/python /home/uzan/Raspberri_Pi_Audio/oled_midi_synth.py
 
 System: libasound2-dev was required to pip-install python-rtmidi on Raspberry Pi OS.
+
+MPK Mini 3/4 exposes several virtual ports (MIDI / DIN / DAW). In DAW or PRG presets the keys
+often go to the DAW port — this script prefers that first. Override with env:
+  RPI_SYNTH_MIDI_PORT=daw|midi|din   (default: try daw, then midi, then din)
 """
 from __future__ import annotations
 
 import math
+import os
 import queue
 import signal
 import sys
@@ -214,18 +219,36 @@ def pick_samplerate(device_index: int) -> int:
 
 
 def pick_midi_in_port() -> tuple[rtmidi.MidiIn, int, str]:
+    """Open the MPK port that carries keyboard note data (DAW vs MIDI port differs by preset)."""
     midi_in = rtmidi.MidiIn()
     n = midi_in.get_port_count()
     names = [midi_in.get_port_name(i) for i in range(n)]
+    mpk: list[tuple[int, str]] = []
     for i in range(n):
         name = midi_in.get_port_name(i)
-        lname = name.lower()
-        if any(m.lower() in lname for m in MIDI_MATCH):
-            return midi_in, i, name
-    midi_in.delete()
-    raise RuntimeError(
-        f"No MIDI port matched {MIDI_MATCH!r}; available: {names!r}"
-    )
+        if any(m.lower() in name.lower() for m in MIDI_MATCH):
+            mpk.append((i, name))
+
+    if not mpk:
+        midi_in.delete()
+        raise RuntimeError(
+            f"No MIDI port matched {MIDI_MATCH!r}; available: {names!r}"
+        )
+
+    pref = os.environ.get("RPI_SYNTH_MIDI_PORT", "").strip().lower()
+    if pref in ("daw", "midi", "din"):
+        order = [pref]
+    else:
+        # DAW first: PRG/DAW-style presets on MPK mini 3/4 often send keys only here.
+        order = ["daw", "midi", "din"]
+
+    for key in order:
+        for i, name in mpk:
+            if key in name.lower():
+                return midi_in, i, name
+
+    # Single generic MPK port or odd naming
+    return midi_in, mpk[0][0], mpk[0][1]
 
 
 def midi_thread_fn(

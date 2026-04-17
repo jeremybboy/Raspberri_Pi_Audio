@@ -45,6 +45,8 @@ pip install -r requirements-synth.txt
 
 Polyphonic oscillator synth with ADSR: USB MIDI (port name contains `MPK`) → audio to **USB Audio CODEC** output → RCA to speakers; OLED shows live waveform and waveform / note line.
 
+**MPK Mini 3/4:** The controller exposes **MIDI**, **DIN**, and **DAW** ports. On **PRG / DAW** presets the keyboard often sends notes on the **DAW** port only. The script now **prefers the DAW port** first. If your keys are on another port, run with e.g. `RPI_SYNTH_MIDI_PORT=midi` or `=din`.
+
 Install **python-rtmidi** once (needs ALSA headers to build from source on the Pi):
 
 ```bash
