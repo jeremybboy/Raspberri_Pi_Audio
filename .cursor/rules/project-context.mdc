@@ -102,7 +102,7 @@ cd /home/uzan/Raspberri_Pi_Audio && .venv/bin/python oled_linein_visualizer.py
 /home/uzan/Raspberri_Pi_Audio/.venv/bin/python /home/uzan/Raspberri_Pi_Audio/oled_midi_synth.py
 ```
 
-Requires `pip install -r requirements-synth.txt` and system `libasound2-dev` for **python-rtmidi**. Program change 0–3 = wave shape. MPK Mini 3/4: opens **all** MPK MIDI ports; optional `RPI_SYNTH_MIDI_PORT=midi` filter; `RPI_SYNTH_MIDI_DEBUG=1` for MIDI trace. MIDI test: `midi_listen_test.py` (add `--amidi-software` for raw Software port); ALSA: `aseqdump -p 28:0,28:1,28:2`; checklist: `scripts/midi_connection_check.sh`. Synth uses RtMidi + raw `amidi` on Software port (`RPI_SYNTH_MIDI_RAW`, default `software`).
+Requires `pip install -r requirements-synth.txt` and system `libasound2-dev` for **python-rtmidi**. Program change 0–3 = wave shape. MPK Mini 3/4: opens **all** MPK MIDI ports; optional `RPI_SYNTH_MIDI_PORT=midi` filter; `RPI_SYNTH_MIDI_DEBUG=1` for MIDI trace. MIDI test: `midi_listen_test.py` (add `--amidi-software` for raw Software port); `midi_key_port_probe.py` (counts per port while you play); ALSA: `aseqdump -p 28:0,28:1,28:2`; checklist: `scripts/midi_connection_check.sh`. Synth uses RtMidi + raw `amidi` on Software port (`RPI_SYNTH_MIDI_RAW`, default `software`).
 
 **BPM estimator (autocorrelation + OLED):**
 

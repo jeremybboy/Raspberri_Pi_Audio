@@ -24,6 +24,7 @@ echo "=== Manual tests while playing keys ==="
 echo "  aseqdump -p 28:0,28:1,28:2"
 echo "  /path/to/.venv/bin/python /path/to/midi_listen_test.py"
 echo "  /path/to/.venv/bin/python /path/to/midi_listen_test.py --amidi-software"
+echo "  /path/to/.venv/bin/python /path/to/midi_key_port_probe.py   # counts per port while you play"
 echo "  /path/to/.venv/bin/python /path/to/oled_midi_synth.py"
 echo
 echo "oled_midi_synth opens RtMidi + raw Software (amidi) by default (RPI_SYNTH_MIDI_RAW=software)."
