@@ -80,6 +80,12 @@ Polyphonic oscillator synth with ADSR: USB MIDI (port name contains `MPK`) → a
    /home/uzan/Raspberri_Pi_Audio/.venv/bin/python /home/uzan/Raspberri_Pi_Audio/midi_key_port_probe.py
    ```
 
+6. **Full isolation order** (USB/kernel on Pi + steps for preset, editor, other PC):
+
+   ```bash
+   bash /home/uzan/Raspberri_Pi_Audio/scripts/mpk_isolation_checklist.sh
+   ```
+
 The synth **`oled_midi_synth.py`** listens on **RtMidi (MIDI/Din/DAW)** and, by default, on the **raw Software** endpoint (`RPI_SYNTH_MIDI_RAW=software`, uses `amidi` + `mido`). Set `RPI_SYNTH_MIDI_RAW=0` to disable the raw path, or `RPI_SYNTH_MIDI_RAW=all` to open every MPK `IO` raw port (possible duplicate notes if the same traffic appears on multiple endpoints).
 
 Install **python-rtmidi** / **mido** once (ALSA headers needed to build RtMidi on the Pi):
