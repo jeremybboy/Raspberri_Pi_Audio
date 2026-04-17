@@ -259,6 +259,8 @@ def handle_midi_bytes(data: list[int], engine: VoiceEngine, eventq: queue.Queue[
         return
     if data[0] == 0xF0:
         return
+    if len(data) < 2:
+        return
     if os.environ.get("RPI_SYNTH_MIDI_DEBUG", "").strip() in ("1", "true", "yes"):
         if _midi_debug_left > 0:
             print("MIDI:", [hex(b) for b in data], flush=True)
@@ -266,8 +268,10 @@ def handle_midi_bytes(data: list[int], engine: VoiceEngine, eventq: queue.Queue[
 
     status = data[0] & 0xF0
     if status == 0x90:  # note on (any channel)
+        if len(data) < 3:
+            return
         note = data[1]
-        vel = data[2] if len(data) > 2 else 0
+        vel = data[2]
         engine.note_on(note, vel)
         eventq.put("midi")
     elif status == 0x80:  # note off
@@ -275,24 +279,30 @@ def handle_midi_bytes(data: list[int], engine: VoiceEngine, eventq: queue.Queue[
         engine.note_off(note)
         eventq.put("midi")
     elif status == 0xC0:  # program change
-        prog = data[1] if len(data) > 1 else 0
+        prog = data[1]
         engine.set_wave(prog % 4)
         eventq.put("midi")
 
 
 def midi_worker(port_index: int, port_name: str, engine: VoiceEngine, eventq: queue.Queue[str]) -> None:
-    """One RtMidiIn per port; MPK exposes multiple virtual cables."""
+    """One RtMidiIn per port; ALSA is more reliable with set_callback than polling."""
     midi_in = rtmidi.MidiIn()
     try:
-        midi_in.open_port(port_index)
-        print(f"MIDI listen: [{port_index}] {port_name}", flush=True)
+        try:
+            midi_in.open_port(port_index)
+        except Exception as e:
+            print(f"MIDI FAILED open [{port_index}] {port_name}: {e}", file=sys.stderr, flush=True)
+            return
+
+        def _cb(event: tuple, _userdata: object) -> None:
+            data, _dt = event
+            if data:
+                handle_midi_bytes(list(data), engine, eventq)
+
+        midi_in.set_callback(_cb)
+        print(f"MIDI listen (callback): [{port_index}] {port_name}", flush=True)
         while running:
-            msg = midi_in.get_message()
-            if msg is None:
-                time.sleep(0.001)
-                continue
-            data, _ = msg
-            handle_midi_bytes(list(data), engine, eventq)
+            time.sleep(0.05)
     finally:
         try:
             midi_in.close_port()

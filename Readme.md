@@ -47,6 +47,22 @@ Polyphonic oscillator synth with ADSR: USB MIDI (port name contains `MPK`) → a
 
 **MPK Mini 3/4:** The controller exposes **MIDI**, **DIN**, and **DAW** ports; the script **opens every MPK port at once** so keys are received no matter which virtual cable the preset uses. Optional: `RPI_SYNTH_MIDI_PORT=midi` limits to one port name substring. `RPI_SYNTH_MIDI_DEBUG=1` prints the first MIDI bytes to the terminal for troubleshooting.
 
+**MIDI troubleshooting**
+
+1. Python listener (RtMidi + callbacks; play keys while it runs):
+
+   ```bash
+   /home/uzan/Raspberri_Pi_Audio/.venv/bin/python /home/uzan/Raspberri_Pi_Audio/midi_listen_test.py
+   ```
+
+2. ALSA listener (no Python; client **28** is the MPK on this machine — run `aconnect -l` if yours differs):
+
+   ```bash
+   aseqdump -p 28:0,28:1,28:2
+   ```
+
+If (2) shows nothing when you play keys, the keyboard is not sending on those three ports (preset / Akai editor). If (2) shows data but (1) does not, report that. RtMidi only lists three MPK inputs; “Software Port” in `aconnect` is not an ALSA **input** for `aseqdump`.
+
 Install **python-rtmidi** once (needs ALSA headers to build from source on the Pi):
 
 ```bash
