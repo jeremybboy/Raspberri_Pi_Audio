@@ -9,9 +9,12 @@ Run (from project venv):
 
 System: libasound2-dev was required to pip-install python-rtmidi on Raspberry Pi OS.
 
-MPK Mini 3/4 exposes several virtual ports (MIDI / DIN / DAW). In DAW or PRG presets the keys
-often go to the DAW port — this script prefers that first. Override with env:
-  RPI_SYNTH_MIDI_PORT=daw|midi|din   (default: try daw, then midi, then din)
+MPK Mini 3/4 exposes several virtual ports (MIDI / DIN / DAW). Keys may appear on any one of them
+depending on the preset. By default this script opens **all** MPK ports at once so note data is not missed.
+
+Optional filter (substring in port name, case-insensitive):
+  RPI_SYNTH_MIDI_PORT=daw   # only ports whose name contains "daw"
+  RPI_SYNTH_MIDI_DEBUG=1    # print incoming MIDI bytes to stderr (sanity check)
 """
 from __future__ import annotations
 
@@ -218,69 +221,85 @@ def pick_samplerate(device_index: int) -> int:
     return 48000
 
 
-def pick_midi_in_port() -> tuple[rtmidi.MidiIn, int, str]:
-    """Open the MPK port that carries keyboard note data (DAW vs MIDI port differs by preset)."""
-    midi_in = rtmidi.MidiIn()
-    n = midi_in.get_port_count()
-    names = [midi_in.get_port_name(i) for i in range(n)]
+def list_mpk_input_ports() -> list[tuple[int, str]]:
+    """Return [(port_index, name), ...] for Akai MPK devices."""
+    probe = rtmidi.MidiIn()
+    try:
+        n = probe.get_port_count()
+        names = [probe.get_port_name(i) for i in range(n)]
+    finally:
+        probe.delete()
+
     mpk: list[tuple[int, str]] = []
     for i in range(n):
-        name = midi_in.get_port_name(i)
+        name = names[i]
         if any(m.lower() in name.lower() for m in MIDI_MATCH):
             mpk.append((i, name))
 
+    filt = os.environ.get("RPI_SYNTH_MIDI_PORT", "").strip().lower()
+    if filt and filt in ("daw", "midi", "din"):
+        mpk = [(i, nm) for i, nm in mpk if filt in nm.lower()]
+
     if not mpk:
-        midi_in.delete()
         raise RuntimeError(
-            f"No MIDI port matched {MIDI_MATCH!r}; available: {names!r}"
+            f"No MIDI input matched {MIDI_MATCH!r}"
+            + (f" and filter {filt!r}" if filt else "")
+            + f"; available: {names!r}"
         )
-
-    pref = os.environ.get("RPI_SYNTH_MIDI_PORT", "").strip().lower()
-    if pref in ("daw", "midi", "din"):
-        order = [pref]
-    else:
-        # DAW first: PRG/DAW-style presets on MPK mini 3/4 often send keys only here.
-        order = ["daw", "midi", "din"]
-
-    for key in order:
-        for i, name in mpk:
-            if key in name.lower():
-                return midi_in, i, name
-
-    # Single generic MPK port or odd naming
-    return midi_in, mpk[0][0], mpk[0][1]
+    return mpk
 
 
-def midi_thread_fn(
-    midi_in: rtmidi.MidiIn, port_idx: int, engine: VoiceEngine, eventq: queue.Queue[str]
-) -> None:
-    midi_in.open_port(port_idx)
+_midi_debug_left = 64
+
+
+def handle_midi_bytes(data: list[int], engine: VoiceEngine, eventq: queue.Queue[str]) -> None:
+    """Handle one ALSA MIDI message (rtmidi gives full voice messages)."""
+    global _midi_debug_left
+    if not data:
+        return
+    if data[0] == 0xF0:
+        return
+    if os.environ.get("RPI_SYNTH_MIDI_DEBUG", "").strip() in ("1", "true", "yes"):
+        if _midi_debug_left > 0:
+            print("MIDI:", [hex(b) for b in data], flush=True)
+            _midi_debug_left -= 1
+
+    status = data[0] & 0xF0
+    if status == 0x90:  # note on (any channel)
+        note = data[1]
+        vel = data[2] if len(data) > 2 else 0
+        engine.note_on(note, vel)
+        eventq.put("midi")
+    elif status == 0x80:  # note off
+        note = data[1]
+        engine.note_off(note)
+        eventq.put("midi")
+    elif status == 0xC0:  # program change
+        prog = data[1] if len(data) > 1 else 0
+        engine.set_wave(prog % 4)
+        eventq.put("midi")
+
+
+def midi_worker(port_index: int, port_name: str, engine: VoiceEngine, eventq: queue.Queue[str]) -> None:
+    """One RtMidiIn per port; MPK exposes multiple virtual cables."""
+    midi_in = rtmidi.MidiIn()
     try:
+        midi_in.open_port(port_index)
+        print(f"MIDI listen: [{port_index}] {port_name}", flush=True)
         while running:
             msg = midi_in.get_message()
             if msg is None:
                 time.sleep(0.001)
                 continue
             data, _ = msg
-            if len(data) < 1:
-                continue
-            status = data[0] & 0xF0
-            if status == 0x90:  # note on
-                note = data[1]
-                vel = data[2] if len(data) > 2 else 0
-                engine.note_on(note, vel)
-                eventq.put("midi")
-            elif status == 0x80:  # note off
-                note = data[1]
-                engine.note_off(note)
-                eventq.put("midi")
-            elif status == 0xC0:  # program change
-                prog = data[1] if len(data) > 1 else 0
-                engine.set_wave(prog % 4)
-                eventq.put("midi")
+            handle_midi_bytes(list(data), engine, eventq)
     finally:
         try:
             midi_in.close_port()
+        except Exception:
+            pass
+        try:
+            midi_in.delete()
         except Exception:
             pass
 
@@ -359,17 +378,20 @@ def main() -> None:
     sr = pick_samplerate(out_idx)
     engine = VoiceEngine(sr)
 
-    midi_in, midi_idx, midi_name = pick_midi_in_port()
+    mpk_ports = list_mpk_input_ports()
     print(f"Output: [{out_idx}] {out_name} @ {sr} Hz", flush=True)
-    print(f"MIDI in: [{midi_idx}] {midi_name}", flush=True)
+    print(f"MIDI: opening {len(mpk_ports)} MPK port(s)", flush=True)
 
     eventq: queue.Queue[str] = queue.Queue()
-    mt = threading.Thread(
-        target=midi_thread_fn,
-        args=(midi_in, midi_idx, engine, eventq),
-        daemon=True,
-    )
-    mt.start()
+    midi_threads: list[threading.Thread] = []
+    for idx, pname in mpk_ports:
+        t = threading.Thread(
+            target=midi_worker,
+            args=(idx, pname, engine, eventq),
+            daemon=True,
+        )
+        t.start()
+        midi_threads.append(t)
 
     stream = sd.OutputStream(
         device=out_idx,
@@ -388,7 +410,8 @@ def main() -> None:
         stream.start()
     except Exception as e:
         running = False
-        mt.join(timeout=2.0)
+        for t in midi_threads:
+            t.join(timeout=2.0)
         raise RuntimeError(f"Failed to start audio: {e}") from e
 
     frame_dt = 1.0 / max(1.0, DISPLAY_FPS)
@@ -444,7 +467,8 @@ def main() -> None:
             oled.clear()
         except Exception:
             pass
-        mt.join(timeout=2.0)
+        for t in midi_threads:
+            t.join(timeout=2.0)
 
 
 if __name__ == "__main__":
