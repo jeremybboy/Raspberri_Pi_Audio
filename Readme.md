@@ -39,6 +39,25 @@ Python libraries:
 python3 -m venv .venv
 source .venv/bin/activate
 pip install numpy sounddevice luma.oled pillow
+pip install -r requirements-synth.txt
+
+## MIDI OLED synthesizer (MPK Mini + Behringer out + SH1106)
+
+Polyphonic oscillator synth with ADSR: USB MIDI (port name contains `MPK`) → audio to **USB Audio CODEC** output → RCA to speakers; OLED shows live waveform and waveform / note line.
+
+Install **python-rtmidi** once (needs ALSA headers to build from source on the Pi):
+
+```bash
+sudo apt-get install -y libasound2-dev
+```
+
+Run:
+
+```bash
+/home/uzan/Raspberri_Pi_Audio/.venv/bin/python /home/uzan/Raspberri_Pi_Audio/oled_midi_synth.py
+```
+
+- **Program change** 0–3 selects sine / triangle / saw / square.
 
 ## Run manually
 

@@ -96,6 +96,14 @@ Same with explicit `cd` (equivalent):
 cd /home/uzan/Raspberri_Pi_Audio && .venv/bin/python oled_linein_visualizer.py
 ```
 
+**MIDI OLED synthesizer (MPK → Behringer USB out + SH1106 scope):**
+
+```bash
+/home/uzan/Raspberri_Pi_Audio/.venv/bin/python /home/uzan/Raspberri_Pi_Audio/oled_midi_synth.py
+```
+
+Requires `pip install -r requirements-synth.txt` and system `libasound2-dev` for **python-rtmidi**. Program change 0–3 = wave shape.
+
 **BPM estimator (autocorrelation + OLED):**
 
 ```bash
