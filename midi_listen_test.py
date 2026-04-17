@@ -13,16 +13,23 @@ While it runs, play keys and twist knobs. Ctrl+C to stop.
 Compare with ALSA (kernel path, independent of Python):
   aseqdump -p 28:0,28:1,28:2
 
+Raw Software port (not in RtMidi — use this if keys only appear here):
+  python midi_listen_test.py --amidi-software
+
 If aseqdump shows events but this script does not, RtMidi/Python is misconfigured.
 If neither shows events when you play keys, the MPK preset is not sending on these
 ports (use Akai MPK Editor / change preset / check USB).
 """
 from __future__ import annotations
 
+import os
+import pathlib
 import signal
 import sys
 import time
 from collections.abc import Callable
+
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 
 import rtmidi
 
@@ -63,8 +70,52 @@ def explain_byte(b: int) -> str:
     return ""
 
 
+def main_amidi_raw(software_only: bool) -> None:
+    """Listen via `amidi -d` on MPK raw ports (Software port is not in RtMidi)."""
+    global running
+    running = True
+    from midi_amidi_helpers import start_amidi_raw_threads
+
+    if software_only:
+        os.environ["RPI_SYNTH_MIDI_RAW"] = "software"
+    else:
+        os.environ["RPI_SYNTH_MIDI_RAW"] = "all"
+
+    print("amidi raw MIDI (RPI_SYNTH_MIDI_RAW=%s). Play keys. Ctrl+C to quit.\n" % os.environ.get("RPI_SYNTH_MIDI_RAW"), flush=True)
+
+    def stop(_s=None, _f=None) -> None:
+        global running
+        running = False
+
+    signal.signal(signal.SIGINT, stop)
+    signal.signal(signal.SIGTERM, stop)
+
+    def dispatch(data: list[int]) -> None:
+        hint = explain_byte(data[0]) if data else ""
+        print(f"{time.monotonic():.3f}  amidi  {data!r}  {hint}", flush=True)
+
+    threads = start_amidi_raw_threads(dispatch, lambda: running)
+    if not threads:
+        print("No raw ports selected. Check: amidi -l", file=sys.stderr, flush=True)
+        sys.exit(1)
+    try:
+        while running:
+            time.sleep(0.2)
+    finally:
+        running = False
+        for t in threads:
+            t.join(timeout=3.0)
+
+
 def main() -> None:
     global running
+    if "--amidi-software" in sys.argv:
+        main_amidi_raw(software_only=True)
+        return
+    if "--amidi-all" in sys.argv:
+        main_amidi_raw(software_only=False)
+        return
+
     ports = list_mpk_ports()
     if not ports:
         print("No RtMidi input port name contains 'mpk'. Available inputs:", file=sys.stderr)

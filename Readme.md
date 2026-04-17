@@ -40,6 +40,7 @@ python3 -m venv .venv
 source .venv/bin/activate
 pip install numpy sounddevice luma.oled pillow
 pip install -r requirements-synth.txt
+# requirements-synth.txt includes python-rtmidi and mido
 
 ## MIDI OLED synthesizer (MPK Mini + Behringer out + SH1106)
 
@@ -61,12 +62,24 @@ Polyphonic oscillator synth with ADSR: USB MIDI (port name contains `MPK`) → a
    aseqdump -p 28:0,28:1,28:2
    ```
 
-If (2) shows nothing when you play keys, the keyboard is not sending on those three ports (preset / Akai editor). If (2) shows data but (1) does not, report that. RtMidi only lists three MPK inputs; “Software Port” in `aconnect` is not an ALSA **input** for `aseqdump`.
+3. **Raw Software port** (keys may appear only here; RtMidi/`aseqdump` do not expose it — use `amidi`):
 
-Install **python-rtmidi** once (needs ALSA headers to build from source on the Pi):
+   ```bash
+   /home/uzan/Raspberri_Pi_Audio/.venv/bin/python /home/uzan/Raspberri_Pi_Audio/midi_listen_test.py --amidi-software
+   ```
+
+4. One-shot checklist (USB + ALSA lists):
+
+   ```bash
+   bash /home/uzan/Raspberri_Pi_Audio/scripts/midi_connection_check.sh
+   ```
+
+The synth **`oled_midi_synth.py`** listens on **RtMidi (MIDI/Din/DAW)** and, by default, on the **raw Software** endpoint (`RPI_SYNTH_MIDI_RAW=software`, uses `amidi` + `mido`). Set `RPI_SYNTH_MIDI_RAW=0` to disable the raw path, or `RPI_SYNTH_MIDI_RAW=all` to open every MPK `IO` raw port (possible duplicate notes if the same traffic appears on multiple endpoints).
+
+Install **python-rtmidi** / **mido** once (ALSA headers needed to build RtMidi on the Pi):
 
 ```bash
-sudo apt-get install -y libasound2-dev
+sudo apt-get install -y libasound2-dev alsa-utils
 ```
 
 Run:

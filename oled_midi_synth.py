@@ -15,14 +15,25 @@ depending on the preset. By default this script opens **all** MPK ports at once 
 Optional filter (substring in port name, case-insensitive):
   RPI_SYNTH_MIDI_PORT=daw   # only ports whose name contains "daw"
   RPI_SYNTH_MIDI_DEBUG=1    # print incoming MIDI bytes to stderr (sanity check)
+
+Raw ALSA MIDI (Software port — not visible to RtMidi), parsed via mido + amidi -d:
+  RPI_SYNTH_MIDI_RAW=software   # default: only "Software Port" hw: lines from amidi -l
+  RPI_SYNTH_MIDI_RAW=all        # all MPK IO raw ports (can duplicate RtMidi — rare)
+  RPI_SYNTH_MIDI_RAW=0          # disable raw amidi path
 """
 from __future__ import annotations
 
 import math
 import os
+import pathlib
 import queue
 import signal
 import sys
+
+# Allow `python /path/to/oled_midi_synth.py` to import repo modules
+_ROOT = pathlib.Path(__file__).resolve().parent
+if str(_ROOT) not in sys.path:
+    sys.path.insert(0, str(_ROOT))
 import threading
 import time
 from collections import deque
@@ -32,6 +43,8 @@ import numpy as np
 import sounddevice as sd
 
 import rtmidi
+
+from midi_amidi_helpers import start_amidi_raw_threads
 from luma.core.interface.serial import i2c
 from luma.oled.device import sh1106
 from PIL import Image, ImageDraw, ImageFont
@@ -402,6 +415,12 @@ def main() -> None:
         )
         t.start()
         midi_threads.append(t)
+
+    def _dispatch_raw(data: list[int]) -> None:
+        handle_midi_bytes(data, engine, eventq)
+
+    amidi_threads = start_amidi_raw_threads(_dispatch_raw, lambda: running)
+    midi_threads.extend(amidi_threads)
 
     stream = sd.OutputStream(
         device=out_idx,
