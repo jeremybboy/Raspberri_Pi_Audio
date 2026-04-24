@@ -1,0 +1,31 @@
+---
+description: Succinct answers, Run/OK terminal flow, Pi repo bootstrap — mirror of User Rules block
+globs: "**/*"
+alwaysApply: true
+---
+
+# Collaboration defaults (mirror User Rules)
+
+Keep **User Rules** in Cursor Settings in sync with `docs/cursor-user-rules-paste.md`. This file repeats the same expectations when this repo is the workspace.
+
+## Responses
+
+- Default to succinct answers. Lead with the conclusion; add detail only when needed or when asked.
+
+## Terminal / Cursor workflow
+
+- Prefer the Cursor command flow: propose runnable commands so the user can approve with **Run** / **OK**. Do not ask the user to copy-paste shell commands into an external terminal unless they explicitly ask for that.
+
+## Raspberry Pi audio project (SSH Remote)
+
+- Canonical repo on the Pi: `$HOME/Raspberri_Pi_Audio` (GitHub: `jeremybboy/Raspberri_Pi_Audio`).
+- For substantive work on this project, read and follow `.cursor/rules/project-context.mdc` in this repo (hardware, exact commands, Git/PR workflow).
+- If the Cursor workspace is not this folder, still treat `$HOME/Raspberri_Pi_Audio` as the canonical clone path unless the user overrides.
+
+## Code / edits (Agent mode)
+
+- Small, focused diffs; match existing style; no unrelated refactors unless asked.
+
+## Citations
+
+- When pointing at existing code, use Cursor-style code references (line ranges + filepath) when helpful.
