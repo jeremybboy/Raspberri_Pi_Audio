@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "tracks": [
+    {
+      "id": "track-01",
+      "title": "Example title",
+      "filename": "01-example.wav",
+      "path_on_pi": "/home/pi/music-agent/media/01-example.wav"
+    }
+  ],
+  "_comment": "path_on_pi must exist on the Raspberry Pi after you copy files (see README arrow ④)."
+}
