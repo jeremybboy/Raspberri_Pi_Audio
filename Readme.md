@@ -7,6 +7,8 @@ Designed to operate as a **bootable hardware appliance** controllable remotely v
 
 This is a test, Jeremy.
 
+**Cursor (AI) over SSH:** where User Rules vs project rules live — see [docs/cursor-ssh-and-rules.md](docs/cursor-ssh-and-rules.md).
+
 Stable real-time BPM detection using a Raspberry Pi 5 and Audio Interface.
 [![Scheme ](BPM_Detector_pedal.svg)]
 
