@@ -162,14 +162,111 @@ If any step fails → **not done**.
 
 ---
 
-## Suggested layout (you implement)
+## Layout
 
 ```text
 v0_0/
-  README.md                 # this spec
-  manifest.example.json     # contract example
-  pi/                       # Pi HTTP server + OLED + mpv (your code)
-  mac/                      # optional: tiny CLI or curl wrapper
+  README.md
+  manifest.example.json
+  requirements-pi.txt
+  requirements-dev.txt
+  scripts/smoke_v0_0.sh
+  mac/pi_player.sh
+  pi/
+    player_server.py
+    oled_status.py
+    tests/
 ```
 
 Parent repo reference for OLED/audio patterns: `../../` (e.g. `oled_linein_level_meter.py`, venv at repo root).
+
+---
+
+## Run on the Pi
+
+**Python:** Either use the repo root [`.venv`](../../.venv) (already includes `luma.oled` and can add FastAPI with `pip install -r music-agent-orchestration/v0_0/requirements-pi.txt`) or create `music-agent-orchestration/v0_0/.venv` and install from [`requirements-pi.txt`](requirements-pi.txt).
+
+**System:** `mpv` installed; I2C enabled for the OLED.
+
+**Paths:** Put audio under `~/music-agent/media/` (or set `MEDIA_ROOT`). Copy [`manifest.example.json`](manifest.example.json) to `music-agent-orchestration/v0_0/manifest.json` and adjust `id` / `title` / `filename` (or use `path_on_pi` — that wins over `filename` when both are set).
+
+**Environment (optional):**
+
+| Variable | Meaning |
+|----------|---------|
+| `MANIFEST_PATH` | Default: `v0_0/manifest.json` next to this README’s folder |
+| `MEDIA_ROOT` | Default: `~/music-agent/media` |
+| `MPV_BIN` | Default: `mpv` |
+| `MPV_OPTS` | Extra args (e.g. ALSA device). Discover names on the Pi: `aplay -L` / `aplay -l` |
+| `DISABLE_OLED` | Set to `1` for headless / tests (no hardware) |
+| `I2C_PORT` | Default `1` |
+| `I2C_ADDR` | Default `0x3C` |
+
+**Start the server** (from repo root, default port **8765**):
+
+```bash
+cd /path/to/Raspberri_Pi_Audio/music-agent-orchestration/v0_0
+/path/to/.venv/bin/python -m uvicorn pi.player_server:app --host 0.0.0.0 --port 8765
+```
+
+---
+
+## Testing
+
+### Layer 1 — Automated (pytest)
+
+From `music-agent-orchestration/v0_0` (repo clone):
+
+```bash
+cd music-agent-orchestration/v0_0
+/path/to/.venv/bin/pip install -r requirements-dev.txt
+/path/to/.venv/bin/python -m pytest pi/tests -q
+```
+
+Uses `DISABLE_OLED` via `conftest.py`; mocks `mpv` where needed.
+
+### Layer 2 — Pi-local smoke
+
+With the server listening on `127.0.0.1:8765`, use `curl` or:
+
+```bash
+bash scripts/smoke_v0_0.sh
+```
+
+You still confirm **audio** and **OLED** manually (P2–P5 in the implementation plan).
+
+### Layer 3 — End-to-end checklist (Mac → Pi)
+
+Prereq: Pi running uvicorn on `0.0.0.0:8765`, Mac on same LAN, TCP 8765 allowed.
+
+```bash
+export PI=http://<pi-ip>:8765
+
+curl -sS "$PI/health"
+echo
+
+curl -sS -X POST "$PI/play" -H 'Content-Type: application/json' \
+  -d '{"track_id":"<valid_id_from_manifest>"}'
+echo
+
+# Listen on the Pi speakers/headphones; check OLED: title + PLAYING
+
+curl -sS -X POST "$PI/stop"
+echo
+
+# OLED should show STOPPED
+
+curl -sS -X POST "$PI/play" -H 'Content-Type: application/json' \
+  -d '{"track_id":"nonexistent"}'
+echo
+# Expect 404
+```
+
+Optional Mac helper ([`mac/pi_player.sh`](mac/pi_player.sh)):
+
+```bash
+export PI_BASE_URL=http://<pi-ip>:8765
+bash mac/pi_player.sh health
+bash mac/pi_player.sh play '<valid_id>'
+bash mac/pi_player.sh stop
+```
