@@ -1,0 +1,10 @@
+.venv/
+venv/
+__pycache__/
+*.pyc
+manifest.json
+media/
+*.wav
+*.mp3
+*.flac
+.env

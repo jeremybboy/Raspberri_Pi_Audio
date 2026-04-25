@@ -6,6 +6,10 @@ Local-first experiment: a **small agent on a MacBook** (Ollama) chooses what to 
 
 **Status:** architecture and docs only — implementation can follow in small steps. Safe to use as a checkpoint if work is interrupted.
 
+## Simplified track (V0.0)
+
+**No Dropbox / no LLM** — validate Mac → HTTP → Pi → USB audio + OLED only. Spec and isolated workspace: **[v0_0/](v0_0/)**. Implement new code under `v0_0/pi/` (and optional `v0_0/mac/`) without changing the Ollama-oriented `mac/` and `pi/` at this folder’s root until you intentionally merge the two lines.
+
 ## Goals (v0)
 
 - **MacBook:** Ollama (local LLM), thin orchestrator, `manifest.json` next to synced Dropbox files.
@@ -22,6 +26,8 @@ Local-first experiment: a **small agent on a MacBook** (Ollama) chooses what to 
 - No DSP “skills” pipeline yet.
 
 ## Architecture
+
+**Diagram (GitHub-friendly export):** see [docs/architecture.md](docs/architecture.md) — same three-region layout; paste its Mermaid block into [mermaid.live](https://mermaid.live) for PNG/SVG.
 
 ```mermaid
 flowchart LR
