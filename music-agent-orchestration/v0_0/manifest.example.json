@@ -1,0 +1,9 @@
+{
+  "tracks": [
+    {
+      "id": "track_1",
+      "title": "Test Track",
+      "filename": "test.mp3"
+    }
+  ]
+}
