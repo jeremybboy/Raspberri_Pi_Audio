@@ -171,6 +171,8 @@ v0_0/
   requirements-pi.txt
   requirements-dev.txt
   scripts/smoke_v0_0.sh
+  scripts/oled_hello.py
+  scripts/oled_live_status.py
   mac/pi_player.sh
   pi/
     player_server.py
@@ -207,6 +209,27 @@ Parent repo reference for OLED/audio patterns: `../../` (e.g. `oled_linein_level
 ```bash
 cd /path/to/Raspberri_Pi_Audio/music-agent-orchestration/v0_0
 /path/to/.venv/bin/python -m uvicorn pi.player_server:app --host 0.0.0.0 --port 8765
+```
+
+### Dynamic OLED feedback (“where we are”)
+
+- **On server start / stop:** the OLED shows **hostname** + `v0_0 READY`, then **server off** when uvicorn exits.
+- **While the server runs:** `GET /health?oled=1` pushes **hostname** + an **idle** line (`idle N trk`, or `!no manifest`). Use this from the Mac whenever you want the display to reflect a ping.
+- **Play / stop:** unchanged — track title + **PLAYING**; last title + **STOPPED**. Failed **play** updates the OLED briefly (`404 NO TRACK`, `MISSING FILE`, etc.).
+- **Continuous mirror (second terminal on the Pi):** polls `/health` every 2s and draws **hostname** + `OK Ntr mf=1` (or `NO SERVER` if down). Ctrl+C shows `live off`.
+
+```bash
+# Terminal A: uvicorn (as above)
+# Terminal B on the Pi:
+cd /path/to/Raspberri_Pi_Audio/music-agent-orchestration/v0_0
+/path/to/.venv/bin/python scripts/oled_live_status.py
+# Optional: PI_URL=http://127.0.0.1:8765 OLED_POLL_SEC=1.5
+```
+
+From the Mac (interactive ping + OLED refresh):
+
+```bash
+curl -sS "http://<pi-ip>:8765/health?oled=1"
 ```
 
 ---
