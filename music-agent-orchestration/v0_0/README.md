@@ -2,6 +2,8 @@
 
 Self-contained workspace under `music-agent-orchestration/v0_0/`. **Do not modify** the parent folder’s Ollama/Dropbox-oriented `mac/` and `pi/` while you prove this line; add code here (`v0_0/pi/`, optional `v0_0/mac/` or shell scripts) instead.
 
+**Operator cheat sheet (browser URLs, curl, tests, add songs):** [OPERATORS.md](OPERATORS.md).
+
 ---
 
 ## Goal
@@ -170,6 +172,7 @@ If any step fails → **not done**.
 ```text
 v0_0/
   README.md
+  OPERATORS.md
   manifest.example.json
   requirements-pi.txt
   requirements-dev.txt
