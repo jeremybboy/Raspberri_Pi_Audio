@@ -23,6 +23,15 @@ def test_root_redirects_to_docs(client: TestClient) -> None:
     assert r.headers.get("location") == "/docs"
 
 
+def test_health_oled_query_ok(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, client: TestClient) -> None:
+    m = tmp_path / "manifest.json"
+    m.write_text(json.dumps({"tracks": []}), encoding="utf-8")
+    monkeypatch.setenv("MANIFEST_PATH", str(m))
+    r = client.get("/health", params={"oled": True})
+    assert r.status_code == 200
+    assert r.json()["track_count"] == 0
+
+
 def test_health_ok(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, client: TestClient) -> None:
     m = tmp_path / "manifest.json"
     m.write_text(
