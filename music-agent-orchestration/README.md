@@ -6,6 +6,11 @@ Local-first experiment: a **small agent on a MacBook** (Ollama) chooses what to 
 
 **Status:** architecture and docs only — implementation can follow in small steps. Safe to use as a checkpoint if work is interrupted.
 
+**Documentation (phases and streaming context):**
+
+- **[Implementation roadmap](docs/roadmap.md)** — phased steps from **V0.0** stability through Mac orchestration, **Ollama**, and cloud fetch.
+- **[Streaming notes: HLS/DASH vs this phase](docs/streaming-notes.md)** — why adaptive **HLS/DASH** packaging is **not** the current focus for a **~10 track** home lab; keep for future milestones.
+
 ## Simplified track (V0.0)
 
 **No Dropbox / no LLM** — validate Mac → HTTP → Pi → USB audio + OLED only. Spec and isolated workspace: **[v0_0/](v0_0/)**. Implement new code under `v0_0/pi/` (and optional `v0_0/mac/`) without changing the Ollama-oriented `mac/` and `pi/` at this folder’s root until you intentionally merge the two lines.
@@ -106,7 +111,7 @@ This folder lives in the canonical **[Raspberri_Pi_Audio](https://github.com/jer
 
 ## Interrupt / resume
 
-If work stops here: **this README + the Mermaid diagrams** are the source of truth. Next implementation steps are usually: **(1)** `manifest.json` + 10 files on Mac, **(2)** Pi HTTP `play` / `stop` + local paths, **(3)** Mac script that calls Ollama and then POSTs to the Pi.
+If work stops here: **this README + the Mermaid diagrams** are the source of truth; extend with **[docs/roadmap.md](docs/roadmap.md)** for phased next steps and **[docs/streaming-notes.md](docs/streaming-notes.md)** for adaptive-streaming scope. Classic bootstrap order: **(1)** `manifest.json` + tracks on Mac/Pi, **(2)** Pi HTTP `play` / `stop` (see **`v0_0/`**), **(3)** Mac script that calls Ollama and then POSTs to the Pi.
 
 ## License
 
