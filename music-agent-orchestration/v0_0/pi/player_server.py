@@ -5,12 +5,14 @@ from __future__ import annotations
 import json
 import logging
 import os
+import socket
 import subprocess
 import threading
+from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import RedirectResponse
 from pydantic import BaseModel, Field
 
@@ -18,7 +20,24 @@ from . import oled_status
 
 log = logging.getLogger(__name__)
 
-app = FastAPI(title="music-agent-v0_0-pi-player", version="0.1.0")
+
+def _host_label() -> str:
+    h = socket.gethostname().strip() or "pi"
+    return h[:21]
+
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    oled_status.show_status(_host_label(), "v0_0 READY")
+    yield
+    oled_status.show_status(_host_label(), "server off")
+
+
+app = FastAPI(
+    title="music-agent-v0_0-pi-player",
+    version="0.1.0",
+    lifespan=lifespan,
+)
 
 
 @app.get("/", include_in_schema=False)
@@ -85,9 +104,19 @@ class PlayBody(BaseModel):
 
 
 @app.get("/health")
-def health() -> dict[str, Any]:
+def health(
+    oled: bool = Query(
+        False,
+        description="If true, refresh OLED with host + idle/manifest snapshot.",
+    ),
+) -> dict[str, Any]:
     mp = _manifest_path()
     idx = load_track_index()
+    if oled:
+        if not mp.is_file():
+            oled_status.show_status(_host_label(), "!no manifest")
+        else:
+            oled_status.show_status(_host_label(), f"idle {len(idx)} trk"[:16])
     return {
         "ok": True,
         "manifest_path": str(mp.resolve()),
@@ -101,13 +130,17 @@ def play(body: PlayBody) -> dict[str, Any]:
     global _mpv, _last_title
     idx = load_track_index()
     if body.track_id not in idx:
+        tid = body.track_id[:14] + ("..." if len(body.track_id) > 14 else "")
+        oled_status.show_status(f">{tid}", "404 NO TRACK"[:16])
         raise HTTPException(status_code=404, detail=f"Unknown track_id: {body.track_id!r}")
     entry = idx[body.track_id]
     try:
         path = resolve_audio_path(entry, _media_root())
     except ValueError as e:
+        oled_status.show_status(_host_label(), "BAD ENTRY"[:16])
         raise HTTPException(status_code=400, detail=str(e)) from e
     if not path.is_file():
+        oled_status.show_status(body.track_id[:16], "MISSING FILE"[:16])
         raise HTTPException(
             status_code=400,
             detail=f"File missing for {body.track_id}: {path}",

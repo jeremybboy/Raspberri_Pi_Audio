@@ -2,6 +2,8 @@
 
 Self-contained workspace under `music-agent-orchestration/v0_0/`. **Do not modify** the parent folder’s Ollama/Dropbox-oriented `mac/` and `pi/` while you prove this line; add code here (`v0_0/pi/`, optional `v0_0/mac/` or shell scripts) instead.
 
+**Operator cheat sheet (browser URLs, curl, tests, add songs):** [OPERATORS.md](OPERATORS.md).
+
 ---
 
 ## Goal
@@ -79,7 +81,7 @@ Small HTTP server (**FastAPI** or **Flask**) on the Pi.
 
 | Method | Path | Behavior |
 |--------|------|----------|
-| `GET` | `/health` | Returns OK (and optional manifest stats). |
+| `GET` | `/health` | Returns OK (and optional manifest stats). Query `?oled=1` refreshes the OLED with host + idle line (`idle N trk` or `!no manifest`). |
 | `POST` | `/play` | Body: `{ "track_id": "track_1" }` — lookup manifest, resolve file, run **mpv**, update **OLED** (title + **PLAYING**). |
 | `POST` | `/stop` | Stop playback; OLED **STOPPED**. |
 
@@ -170,6 +172,7 @@ If any step fails → **not done**.
 ```text
 v0_0/
   README.md
+  OPERATORS.md
   manifest.example.json
   requirements-pi.txt
   requirements-dev.txt
