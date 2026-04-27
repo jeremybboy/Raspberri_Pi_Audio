@@ -17,6 +17,12 @@ def client() -> TestClient:
     return TestClient(app)
 
 
+def test_root_redirects_to_docs(client: TestClient) -> None:
+    r = client.get("/", follow_redirects=False)
+    assert r.status_code == 307
+    assert r.headers.get("location") == "/docs"
+
+
 def test_health_ok(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, client: TestClient) -> None:
     m = tmp_path / "manifest.json"
     m.write_text(

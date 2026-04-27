@@ -106,7 +106,10 @@ Content-Type: application/json
 POST http://<pi-ip>:8765/stop
 ```
 
-No UI required — `curl` or a tiny CLI is enough.
+Use **`curl`**, [`mac/pi_player.sh`](mac/pi_player.sh), or a **Mac browser**:
+
+- Open **`http://<pi-ip>:8765/`** — the server redirects to **`/docs`** (FastAPI **Swagger**). Use **Try it out** on `GET /health`, `POST /play` (body `{"track_id": "track_1"}`), and `POST /stop`.
+- Or open **`http://<pi-ip>:8765/health`** for raw JSON only (no play/stop buttons).
 
 **Success:** Mac triggers playback remotely.
 
@@ -208,6 +211,8 @@ Parent repo reference for OLED/audio patterns: `../../` (e.g. `oled_linein_level
 cd /path/to/Raspberri_Pi_Audio/music-agent-orchestration/v0_0
 /path/to/.venv/bin/python -m uvicorn pi.player_server:app --host 0.0.0.0 --port 8765
 ```
+
+Then on your **Mac** (same LAN), open **`http://<pi-ip>:8765/`** — you land on **Swagger** (`/docs`) to try `health` / `play` / `stop` in the browser.
 
 ---
 

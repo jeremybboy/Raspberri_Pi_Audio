@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Any
 
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import RedirectResponse
 from pydantic import BaseModel, Field
 
 from . import oled_status
@@ -18,6 +19,13 @@ from . import oled_status
 log = logging.getLogger(__name__)
 
 app = FastAPI(title="music-agent-v0_0-pi-player", version="0.1.0")
+
+
+@app.get("/", include_in_schema=False)
+def root() -> RedirectResponse:
+    """Browser-friendly entry: FastAPI Swagger UI for Try it out on /health, /play, /stop."""
+    return RedirectResponse(url="/docs", status_code=307)
+
 
 _lock = threading.Lock()
 _mpv: subprocess.Popen[Any] | None = None
