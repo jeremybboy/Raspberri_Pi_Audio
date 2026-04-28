@@ -50,3 +50,25 @@ def get_percent_pos(sock_path: str) -> float | None:
         return float(data)
     except (TypeError, ValueError):
         return None
+
+
+def _get_float_property(sock_path: str, prop: str) -> float | None:
+    r = ipc_call(sock_path, ["get_property", prop])
+    err = r.get("error")
+    if err not in (None, "success"):
+        return None
+    data = r.get("data")
+    if data is None:
+        return None
+    try:
+        return float(data)
+    except (TypeError, ValueError):
+        return None
+
+
+def get_time_pos(sock_path: str) -> float | None:
+    return _get_float_property(sock_path, "time-pos")
+
+
+def get_duration(sock_path: str) -> float | None:
+    return _get_float_property(sock_path, "duration")

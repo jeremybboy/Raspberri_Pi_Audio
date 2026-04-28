@@ -85,7 +85,14 @@ curl -sS -X POST "$PI_BASE_URL/stop"
 
 ## OLED playback meter
 
-While a track plays, **mpv** runs with **`--input-ipc-server`** (unless **`DISABLE_PLAYBACK_METER=1`**) and a background thread polls **`percent-pos`** to draw a **progress bar** on the SH1106.
+While a track plays, **mpv** runs with **`--input-ipc-server`** (unless **`DISABLE_PLAYBACK_METER=1`**) and a background thread renders OLED with **title + `mm:ss / total`** plus a **separate VU-style dB meter**.
+
+By default, dB comes from short-window `ffmpeg` RMS probing; set **`PLAYBACK_METER_MODE=none`** to skip dB probing and keep the clock with a lightweight pulse fallback.
+
+For faster visual response, tune:
+
+- **`OLED_REFRESH_SECONDS`** (default `0.08`) — lower is faster redraw.
+- **`DB_PROBE_INTERVAL_SECONDS`** (default `0.35`) — lower is faster dB updates.
 
 Tests and CI set **`DISABLE_PLAYBACK_METER=1`** via [`pi/tests/conftest.py`](pi/tests/conftest.py).
 

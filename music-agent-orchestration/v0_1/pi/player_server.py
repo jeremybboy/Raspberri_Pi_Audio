@@ -35,6 +35,31 @@ def _playback_meter_enabled() -> bool:
     return True
 
 
+def _meter_mode() -> str:
+    mode = os.environ.get("PLAYBACK_METER_MODE", "ffmpeg").strip().lower()
+    if mode in ("ffmpeg", "none"):
+        return mode
+    return "ffmpeg"
+
+
+def _oled_refresh_seconds() -> float:
+    raw = os.environ.get("OLED_REFRESH_SECONDS", "").strip()
+    try:
+        value = float(raw) if raw else 0.08
+    except ValueError:
+        return 0.08
+    return max(0.03, min(0.5, value))
+
+
+def _db_probe_interval_seconds() -> float:
+    raw = os.environ.get("DB_PROBE_INTERVAL_SECONDS", "").strip()
+    try:
+        value = float(raw) if raw else 0.35
+    except ValueError:
+        return 0.35
+    return max(0.1, min(2.0, value))
+
+
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
     oled_status.show_status(_host_label(), "v0_1 READY")
@@ -114,15 +139,27 @@ def _stop_meter_thread() -> None:
     _ipc_sock_path = None
 
 
-def _meter_loop(sock_path: str, title: str) -> None:
+def _meter_loop(sock_path: str, title: str, audio_path: str) -> None:
     tick = 0
+    db_value: float | None = None
+    last_db_at = 0.0
+    refresh_s = _oled_refresh_seconds()
+    db_interval_s = _db_probe_interval_seconds()
     while not _meter_stop.is_set():
         if _mpv is None or _mpv.poll() is not None:
             break
-        pct = mpv_ipc.get_percent_pos(sock_path)
-        oled_meter.show_playback_bar(title, pct, tick)
+        time_pos = mpv_ipc.get_time_pos(sock_path)
+        duration = mpv_ipc.get_duration(sock_path)
+
+        # ffmpeg probing is heavier, so sample at a lower cadence.
+        now = time.monotonic()
+        if _meter_mode() == "ffmpeg" and (now - last_db_at) >= db_interval_s:
+            db_value = oled_meter.estimate_db_window(audio_path, time_pos)
+            last_db_at = now
+
+        oled_meter.show_playback_vu(title, time_pos, duration, db_value, tick)
         tick += 1
-        time.sleep(0.18)
+        time.sleep(refresh_s)
     _meter_stop.clear()
 
 
@@ -315,7 +352,7 @@ def play(body: PlayBody) -> dict[str, Any]:
                 time.sleep(0.025)
             _meter_thread = threading.Thread(
                 target=_meter_loop,
-                args=(sock, title),
+                args=(sock, title, str(path)),
                 daemon=True,
                 name="oled-meter",
             )

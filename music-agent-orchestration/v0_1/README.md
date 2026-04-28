@@ -4,7 +4,7 @@ Self-contained workspace under `music-agent-orchestration/v0_1/`. Builds on **[V
 
 - **Landing page** at `/` (“Music Agent Player” + future skills blurb + track buttons).
 - **`GET /api/tracks`** — JSON list of `{ id, title }` for scripts or the UI.
-- **OLED playback bar** — during play, shows title + **progress** from **mpv IPC** (`percent-pos`), unless `DISABLE_PLAYBACK_METER=1`.
+- **OLED playback clock + VU meter** — during play, shows title + `mm:ss / total` from **mpv IPC**, plus a separate VU-style dB bar (`ffmpeg` probe by default), unless `DISABLE_PLAYBACK_METER=1`.
 
 **Do not modify** the parent folder’s Ollama/Dropbox-oriented `mac/` and `pi/` at `music-agent-orchestration/` root here; keep orchestration experiments under `v0_1/pi/` and `v0_1/mac/` only.
 
@@ -90,7 +90,7 @@ Small HTTP server (**FastAPI** or **Flask**) on the Pi.
 | `GET` | `/` | HTML landing page: Music Agent Player, future skills text, buttons per manifest track. |
 | `GET` | `/api/tracks` | JSON array of `{ "id", "title" }` from manifest. |
 | `GET` | `/health` | Returns OK (and optional manifest stats). Query `?oled=1` refreshes the OLED with host + idle line (`idle N trk` or `!no manifest`). |
-| `POST` | `/play` | Body: `{ "track_id": "track_1" }` — lookup manifest, resolve file, run **mpv** (with IPC socket when meter enabled), update **OLED** (progress bar while playing). |
+| `POST` | `/play` | Body: `{ "track_id": "track_1" }` — lookup manifest, resolve file, run **mpv** (with IPC socket when meter enabled), update **OLED** (`mm:ss / total` + VU-style meter while playing). |
 | `POST` | `/stop` | Stop playback; OLED **STOPPED**. |
 
 **Dependencies:** `mpv`, Python web stack, OLED library (e.g. `luma.oled` as in the main Pi repo).
@@ -215,7 +215,10 @@ Parent repo reference for OLED/audio patterns: `../../` (e.g. `oled_linein_level
 | `MPV_BIN` | Default: `mpv` |
 | `MPV_OPTS` | Extra args (e.g. ALSA device). Discover names on the Pi: `aplay -L` / `aplay -l` |
 | `DISABLE_OLED` | Set to `1` for headless / tests (no hardware) |
-| `DISABLE_PLAYBACK_METER` | Set to `1` to skip mpv IPC + OLED progress thread (tests default this). |
+| `DISABLE_PLAYBACK_METER` | Set to `1` to skip mpv IPC + OLED meter thread (tests default this). |
+| `PLAYBACK_METER_MODE` | `ffmpeg` (default) estimates RMS dB for VU meter; `none` keeps clock + pulse fallback without dB probing. |
+| `OLED_REFRESH_SECONDS` | OLED draw interval (default `0.08`). Lower = faster refresh, higher CPU. Range clamp: `0.03..0.5`. |
+| `DB_PROBE_INTERVAL_SECONDS` | dB probe interval when `PLAYBACK_METER_MODE=ffmpeg` (default `0.35`). Lower = snappier meter, higher CPU. Range clamp: `0.1..2.0`. |
 | `I2C_PORT` | Default `1` |
 | `I2C_ADDR` | Default `0x3C` |
 
