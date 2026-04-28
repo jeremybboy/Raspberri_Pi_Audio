@@ -222,11 +222,13 @@ Parent repo reference for OLED/audio patterns: `../../` (e.g. `oled_linein_level
 | `I2C_PORT` | Default `1` |
 | `I2C_ADDR` | Default `0x3C` |
 
-**Start the server** (from repo root, default port **8765**):
+**Start the server** (from repo root, default port **8766**):
 
 ```bash
-cd /path/to/Raspberri_Pi_Audio/music-agent-orchestration/v0_1
-/path/to/.venv/bin/python -m uvicorn pi.player_server:app --host 0.0.0.0 --port 8766
+cd /home/uzan/Raspberri_Pi_Audio
+source .venv/bin/activate
+cd music-agent-orchestration/v0_1
+python -m uvicorn pi.player_server:app --host 0.0.0.0 --port 8766
 ```
 
 Then on your **Mac** (same LAN), open **`http://<pi-ip>:8766/`** — Music Agent landing page; **Swagger** remains at **`/docs`**.
