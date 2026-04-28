@@ -15,6 +15,10 @@ Local-first experiment: a **small agent on a MacBook** (Ollama) chooses what to 
 
 **No Dropbox / no LLM** — validate Mac → HTTP → Pi → USB audio + OLED only. Spec and isolated workspace: **[v0_0/](v0_0/)**. Implement new code under `v0_0/pi/` (and optional `v0_0/mac/`) without changing the Ollama-oriented `mac/` and `pi/` at this folder’s root until you intentionally merge the two lines.
 
+## Next iteration (V0.1)
+
+Landing page, **`GET /api/tracks`**, OLED progress meter during playback (mpv IPC). Isolated workspace: **[v0_1/](v0_1/)**. **[Roadmap](docs/roadmap.md)** · **[Streaming notes](docs/streaming-notes.md)**.
+
 ## Goals (v0)
 
 - **MacBook:** Ollama (local LLM), thin orchestrator, `manifest.json` next to synced Dropbox files.
