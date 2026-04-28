@@ -233,6 +233,36 @@ Then on your **Mac** (same LAN), open **`http://<pi-ip>:8766/`** — Music Agent
 
 ---
 
+## Quick terminal control
+
+Find the Pi IP on the Pi itself:
+
+```bash
+hostname -I
+```
+
+Example output:
+
+```text
+192.168.68.65
+```
+
+Play `track_1` (replace IP as needed):
+
+```bash
+curl -sS -X POST "http://192.168.68.65:8766/play" \
+  -H "Content-Type: application/json" \
+  -d '{"track_id":"track_1"}'
+```
+
+Stop playback:
+
+```bash
+curl -sS -X POST "http://192.168.68.65:8766/stop"
+```
+
+---
+
 ## Testing
 
 ### Layer 1 — Automated (pytest)
