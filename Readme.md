@@ -9,7 +9,7 @@ This is a test, Jeremy.
 
 **Cursor (AI) over SSH:** where User Rules vs project rules live — see [docs/cursor-ssh-and-rules.md](docs/cursor-ssh-and-rules.md). **User Rules text to paste** (succinct answers, Run/OK, Pi bootstrap): [docs/cursor-user-rules-paste.md](docs/cursor-user-rules-paste.md).
 
-**Adjunct (v0 docs):** Mac + Ollama + Dropbox test library → Pi HTTP player — [music-agent-orchestration/README.md](music-agent-orchestration/README.md). **V0.0 (simplified Pi player, Mac browser / curl, tests, add tracks):** [music-agent-orchestration/v0_0/OPERATORS.md](music-agent-orchestration/v0_0/OPERATORS.md). **Phased roadmap + HLS/DASH scope notes:** [music-agent-orchestration/docs/roadmap.md](music-agent-orchestration/docs/roadmap.md), [music-agent-orchestration/docs/streaming-notes.md](music-agent-orchestration/docs/streaming-notes.md).
+**Adjunct (v0 docs):** Mac + Ollama + Dropbox test library → Pi HTTP player — [music-agent-orchestration/README.md](music-agent-orchestration/README.md). **V0.0 (simplified Pi player, Mac browser / curl, tests, add tracks):** [music-agent-orchestration/v0_0/OPERATORS.md](music-agent-orchestration/v0_0/OPERATORS.md). **V0.1 (landing page, catalog + IPC playback meter, port 8766):** [music-agent-orchestration/v0_1/OPERATORS.md](music-agent-orchestration/v0_1/OPERATORS.md). **Phased roadmap + HLS/DASH scope notes:** [music-agent-orchestration/docs/roadmap.md](music-agent-orchestration/docs/roadmap.md), [music-agent-orchestration/docs/streaming-notes.md](music-agent-orchestration/docs/streaming-notes.md).
 
 Stable real-time BPM detection using a Raspberry Pi 5 and Audio Interface.
 [![Scheme ](BPM_Detector_pedal.svg)]
