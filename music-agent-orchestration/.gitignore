@@ -8,3 +8,5 @@ media/
 *.mp3
 *.flac
 .env
+.env.local
+**/.env.local

@@ -1,0 +1,16 @@
+[Unit]
+Description=V0.1 OLED boot/status rotator (Wi-Fi/IP/CPU)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=uzan
+WorkingDirectory=/home/uzan/Raspberri_Pi_Audio/music-agent-orchestration/v0_2
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/home/uzan/Raspberri_Pi_Audio/.venv/bin/python -m pi.oled_boot_status
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target
