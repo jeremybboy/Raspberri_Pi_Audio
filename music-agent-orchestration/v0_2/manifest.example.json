@@ -1,0 +1,29 @@
+{
+  "tracks": [
+    {
+      "id": "track_1",
+      "title": "V0.0 Demo A",
+      "filename": "v0_0_demo.wav"
+    },
+    {
+      "id": "track_2",
+      "title": "V0.0 Demo B",
+      "filename": "v0_0_demo2.wav"
+    },
+    {
+      "id": "que_maravilla",
+      "title": "Que Maravilla",
+      "filename": "QueMaravilla.mp3"
+    },
+    {
+      "id": "javi_mula_come_on",
+      "title": "Javi Mula - Come On",
+      "filename": "Javi Mula - Come On.mp3"
+    },
+    {
+      "id": "luke_million_italo_journey",
+      "title": "Luke Million - Italo Journey",
+      "filename": "Luke Million - Italo Journey.mp3"
+    }
+  ]
+}

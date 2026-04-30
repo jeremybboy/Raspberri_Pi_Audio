@@ -1,0 +1,19 @@
+{
+  "tracks": [
+    {
+      "id": "que_maravilla",
+      "title": "Que Maravilla",
+      "s3_key": "tracks/que_maravilla.mp3"
+    },
+    {
+      "id": "javi_mula_come_on",
+      "title": "Javi Mula - Come On",
+      "s3_key": "tracks/javi_mula_come_on.mp3"
+    },
+    {
+      "id": "luke_million_italo_journey",
+      "title": "Luke Million - Italo Journey",
+      "s3_key": "tracks/luke_million_italo_journey.mp3"
+    }
+  ]
+}

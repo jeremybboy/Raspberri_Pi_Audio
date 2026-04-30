@@ -15,9 +15,12 @@ Local-first experiment: a **small agent on a MacBook** (Ollama) chooses what to 
 
 **No Dropbox / no LLM** — validate Mac → HTTP → Pi → USB audio + OLED only. Spec and isolated workspace: **[v0_0/](v0_0/)**. Implement new code under `v0_0/pi/` (and optional `v0_0/mac/`) without changing the Ollama-oriented `mac/` and `pi/` at this folder’s root until you intentionally merge the two lines.
 
-## Next iteration (V0.1)
+## Next iterations (V0.1 and V0.2)
 
-Landing page, **`GET /api/tracks`**, OLED progress meter during playback (mpv IPC). Isolated workspace: **[v0_1/](v0_1/)**. **[Roadmap](docs/roadmap.md)** · **[Streaming notes](docs/streaming-notes.md)**.
+- **V0.1**: Landing page, **`GET /api/tracks`**, OLED progress meter during playback (mpv IPC), local media on Pi. Workspace: **[v0_1/](v0_1/)**.
+- **V0.2**: Cloud-authoritative tracks, Lambda presign, S3 playback URLs consumed by Pi `mpv`. Workspace: **[v0_2/](v0_2/)**.
+
+See **[Roadmap](docs/roadmap.md)** and **[Streaming notes](docs/streaming-notes.md)**.
 
 ## Goals (v0)
 
